@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+
+# Database files
+*.sqlite
+*.sqlite3
+database.sqlite
+
+# Uploaded images (preserve folder, exclude content)
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

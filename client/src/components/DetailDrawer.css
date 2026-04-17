@@ -1,0 +1,37 @@
+.dd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;backdrop-filter:blur(4px);display:flex;align-items:flex-end}
+.dd-panel{width:100%;max-height:92vh;background:var(--bg2);border-radius:24px 24px 0 0;border-top:1px solid var(--border2);overflow-y:auto;animation:slideUp .3s ease}
+.dd-handle{width:36px;height:4px;background:var(--bg5);border-radius:4px;margin:10px auto 0}
+.dd-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+.dd-header h3{font-size:16px;font-weight:700}
+.dd-close{width:30px;height:30px;background:var(--bg4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);transition:all .2s}
+.dd-close:hover{background:var(--red-dim);color:var(--red)}
+.dd-skel,.dd-content{display:flex;flex-direction:column}
+.dd-img{width:100%;max-height:260px;object-fit:cover}
+.dd-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+.dd-tags{display:flex;flex-wrap:wrap;gap:7px}
+.dd-tag{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.dd-title{font-size:18px;font-weight:800;line-height:1.3}
+.dd-desc{font-size:14px;color:var(--text2);line-height:1.65}
+.dd-loc{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--text3);line-height:1.5}
+.dd-stats{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--text3);padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.dd-author{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:12px;border:1px solid var(--border)}
+.dd-author-name{font-size:13px;font-weight:700}
+.dd-author-sub{font-size:11px;color:var(--text3)}
+.dd-comments{display:flex;flex-direction:column;gap:10px}
+.dd-comments-h{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.dd-comment-row{display:flex;gap:8px}
+.dd-comment-input{flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text1);font-size:13px;transition:border-color .2s}
+.dd-comment-input:focus{border-color:var(--orange)}
+.dd-comment-input::placeholder{color:var(--text3)}
+.dd-comment-post{padding:9px 16px;background:var(--orange);color:#fff;border-radius:10px;font-size:13px;font-weight:700;transition:all .2s}
+.dd-comment-post:disabled{opacity:.5;cursor:not-allowed}
+.dd-comment-list{display:flex;flex-direction:column;gap:10px;max-height:280px;overflow-y:auto}
+.dd-no-comments{text-align:center;color:var(--text3);font-size:13px;padding:20px}
+.dd-comment{display:flex;gap:9px}
+.dd-comment-body{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 11px}
+.dd-comment-who{font-size:12px;font-weight:700}
+.dd-comment-text{font-size:13px;color:var(--text2);line-height:1.5;margin:3px 0}
+.dd-comment-time{font-size:10px;color:var(--text3)}
+.dd-comment-official .dd-comment-body{border:1px solid rgba(255,90,31,.3);background:rgba(255,90,31,.04)}
+.official-tag{font-size:9px;font-weight:900;background:var(--orange);color:#fff;padding:2px 6px;border-radius:4px;margin-left:8px;letter-spacing:.3px}
+.dd-err{padding:40px;text-align:center;color:var(--text3)}

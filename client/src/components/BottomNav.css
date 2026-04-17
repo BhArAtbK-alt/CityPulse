@@ -1,0 +1,5 @@
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--bottom-h);z-index:200;background:rgba(10,10,10,.96);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:0 8px 8px}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding:8px 4px;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;transition:color .2s;text-decoration:none}
+.bnav-item.active{color:var(--orange)}
+.bnav-create{width:48px;height:48px;background:var(--orange);color:#fff;border-radius:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 18px rgba(255,90,31,.45);transition:all .2s;transform:translateY(-4px)}
+.bnav-create:hover{background:#ff4500;transform:translateY(-6px) scale(1.05)}

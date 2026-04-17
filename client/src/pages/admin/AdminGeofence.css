@@ -1,0 +1,17 @@
+.adm-map-card{padding-bottom:16px}
+.adm-map-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--border);height:420px}
+.adm-leaflet{width:100%;height:100%}
+.adm-geo-status{margin-top:14px}
+.adm-geo-active,.adm-geo-empty{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:12px}
+.adm-geo-active{background:rgba(0,201,167,.08);border:1px solid rgba(0,201,167,.25)}
+.adm-geo-active span,.adm-geo-empty span{font-size:18px;flex-shrink:0}
+.adm-geo-active strong{font-size:13px;font-weight:700;color:var(--teal)}
+.adm-geo-active p,.adm-geo-empty p{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5}
+.adm-geo-empty{background:var(--bg3);border:1px solid var(--border)}
+.adm-geo-empty strong{font-size:13px;font-weight:700;color:var(--text2)}
+.adm-geo-btns{display:flex;gap:10px;margin-top:4px}
+.adm-save-btn{display:flex;align-items:center;gap:8px;padding:12px 24px;background:var(--orange);color:#fff;border-radius:12px;font-size:14px;font-weight:700;transition:all .2s;box-shadow:0 4px 14px rgba(255,90,31,.28)}
+.adm-save-btn:hover:not(:disabled){background:#ff4500;transform:translateY(-1px)}
+.adm-save-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.adm-clear-btn{padding:12px 20px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text2);font-size:14px;font-weight:600;transition:all .2s}
+.adm-clear-btn:hover{border-color:var(--red);color:var(--red)}

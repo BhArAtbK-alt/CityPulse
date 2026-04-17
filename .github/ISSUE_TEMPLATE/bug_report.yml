@@ -1,0 +1,54 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill this out! Please be as detailed as possible.
+
+  - type: input
+    id: version
+    attributes:
+      label: CityPulse Version
+      placeholder: "e.g. 3.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected Area
+      options:
+        - Citizen (Feed / Map / Profile)
+        - Admin Dashboard
+        - Super Admin Dashboard
+        - Authentication
+        - Server / API
+        - Database / SQL
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      placeholder: What happened vs what you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs (if any)
+      render: shell

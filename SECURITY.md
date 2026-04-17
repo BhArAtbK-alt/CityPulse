@@ -1,43 +1,29 @@
-# Security Policy
+# 🛡️ Security Policy
 
-## Supported Versions
+## Reporting Vulnerabilities
 
-| Version | Supported |
-|---------|-----------|
-| 3.x     | ✅ Active  |
-| < 3.0   | ❌ EOL     |
+**DO NOT OPEN A PUBLIC GITHUB ISSUE** for security vulnerabilities.
 
-## Reporting a Vulnerability
+If you discover a security bug or have concerns about the security of CityPulse, please report it via one of the following methods:
 
-If you discover a security vulnerability in CityPulse, please **do NOT open a public GitHub Issue**.
-
-Instead, please report it privately via one of these channels:
-
-1. **GitHub Security Advisories** — click "Report a vulnerability" in the Security tab
-2. **Email** — contact the maintainer directly (see GitHub profile)
+- **Private Disclosure**: Send a detailed report to `security@yourdomain.com`.
+- **GitHub Private Reporting**: Use the "Report a vulnerability" button in the "Security" tab of this repository.
 
 Please include:
-- A clear description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (if any)
+- A description of the vulnerability.
+- Steps to reproduce the issue (proof-of-concept).
+- Potential impact.
 
-We aim to respond within **72 hours** and issue a patch within **7 days** for critical issues.
+---
 
-## Security Best Practices for Self-Hosters
+## Deployment Security Checklist (Self-Hosters)
 
-When deploying CityPulse, ensure you:
+To ensure your private instance is secure, please verify the following:
 
-- [ ] Generate a strong `JWT_SECRET` (minimum 64 bytes): `openssl rand -base64 64`
-- [ ] Use unique, random `ADMIN_SECRET_CODE` and `SUPER_ADMIN_CODE`
-- [ ] Enable Supabase RLS (all policies are in `sql/06_rls_policies.sql`)
-- [ ] Keep `SUPABASE_SERVICE_KEY` confidential — it bypasses RLS
-- [ ] Configure `CLIENT_URL` to your exact production domain (CORS protection)
-- [ ] Use HTTPS in production (Render/Vercel handle this automatically)
-- [ ] Rotate your Supabase service key regularly via the Supabase dashboard
-- [ ] Set `NODE_ENV=production` in your server environment
-
-## Known Design Decisions
-
-- The `exec_sql` Supabase RPC function uses string interpolation for the HTTP bridge. This is intentional but restricts the function to the `service_role` only (never exposed to client).
-- JWT tokens have a 30-day expiry. Consider implementing refresh token rotation for production at scale.
+1. **Environment Isolation**: Ensure your `.env` file is NOT world-readable and never committed to source control.
+2. **JWT Secret**: Use a unique, high-entropy secret (32+ characters) for `JWT_SECRET`.
+3. **Admin Codes**: Change `ADMIN_SECRET_CODE` and `SUPER_ADMIN_CODE` from their defaults.
+4. **Supabase RLS**: Ensure Row Level Security (RLS) is enabled for all tables. The provided `sql/` scripts enable RLS by default.
+5. **HTTPS**: Always run the production application behind a reverse proxy (like Nginx) with a valid SSL certificate (Let's Encrypt).
+6. **Rate Limiting**: Review the `express-rate-limit` configurations in `server/index.js` to ensure they meet your production traffic needs.
+7. **Service Key Protection**: Never expose the `SUPABASE_SERVICE_KEY` to the client-side code. It must stay strictly on the backend.

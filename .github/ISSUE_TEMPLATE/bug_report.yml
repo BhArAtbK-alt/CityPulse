@@ -1,54 +1,40 @@
 name: 🐛 Bug Report
-description: Report a bug or unexpected behavior
-labels: ["bug", "needs-triage"]
+description: Create a report to help us improve CityPulse.
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill this out! Please be as detailed as possible.
-
-  - type: input
-    id: version
-    attributes:
-      label: CityPulse Version
-      placeholder: "e.g. 3.0.0"
-    validations:
-      required: true
-
-  - type: dropdown
-    id: area
-    attributes:
-      label: Affected Area
-      options:
-        - Citizen (Feed / Map / Profile)
-        - Admin Dashboard
-        - Super Admin Dashboard
-        - Authentication
-        - Server / API
-        - Database / SQL
-        - Other
-    validations:
-      required: true
-
+        Thanks for taking the time to fill out this bug report!
   - type: textarea
-    id: description
+    id: what-happened
     attributes:
-      label: Bug Description
-      placeholder: What happened vs what you expected
+      label: What happened?
+      description: Also tell us what you expected to happen.
+      placeholder: Tell us what you see!
     validations:
       required: true
-
   - type: textarea
-    id: steps
+    id: reproduction
     attributes:
-      label: Steps to Reproduce
+      label: How can we reproduce it?
+      description: Provide steps to reproduce the behavior.
       placeholder: |
         1. Go to '...'
-        2. Click on '...'
-        3. See error
-
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Browser, Node version, etc.
+      placeholder: e.g. macOS 13.0, Chrome 110, Node v18.15.0
   - type: textarea
     id: logs
     attributes:
-      label: Error Logs (if any)
+      label: Relevant Log Output
+      description: Please copy and paste any relevant log output or screenshots.
       render: shell

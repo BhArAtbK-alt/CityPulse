@@ -55,3 +55,15 @@
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-ghost{padding:11px 18px;background:var(--bg4);border:1px solid var(--border);border-radius:12px;color:var(--text2);font-size:14px;font-weight:600;transition:all .2s}
 .btn-ghost:hover{color:var(--text1);border-color:var(--border2)}
+
+/* AI Feature Styles */
+.locked-tag{font-size:9px;color:var(--teal,#00c9a7);background:rgba(0,201,167,.12);padding:2px 7px;border-radius:8px;text-transform:none;letter-spacing:0;font-weight:700;margin-left:6px}
+.cf-in.locked{opacity:.7;cursor:not-allowed;border-color:rgba(0,201,167,.3);background:rgba(0,201,167,.05)}
+.cat-grid.disabled{opacity:.6;pointer-events:none}
+.ai-badge{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;animation:aiFadeIn .3s ease}
+.ai-badge.ai-success{background:rgba(0,201,167,.08);border:1px solid rgba(0,201,167,.2);color:var(--teal,#00c9a7)}
+.ai-badge.ai-error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--red,#ef4444)}
+.ai-badge .spinner.sm{width:16px;height:16px;border-width:2px}
+.review-fail{display:block;margin-top:4px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:8px 12px;color:var(--yellow,#fbbf24);font-size:12px;font-weight:500}
+@keyframes aiFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+

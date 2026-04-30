@@ -91,6 +91,84 @@ To access the Admin Portal:
 
 ---
 
+## 🤖 AI Integration (Optional)
+
+CityPulse includes an **optional AI layer** powered by **Google Gemini Vision**. When enabled, it adds:
+
+| Feature | What it Does |
+|---|---|
+| **Phase 1: Image Classification** | AI analyzes uploaded photos to auto-detect issue category (pothole, garbage, etc.) and generates a rigid title. |
+| **Phase 2: Description Matching** | AI verifies that the user's written description matches the uploaded photo, preventing false reports. |
+| **Phase 3: Resolution Audit** | When admins resolve an issue, AI compares before/after photos to verify the fix is genuine. |
+
+### ✅ How to Enable AI
+
+1. **Get a Gemini API Key** :
+   - Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Create a new API key
+
+2. **Add to your `.env`** (in `server/`):
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+3. **Run the AI database migration** :
+   ```sql
+   -- Run in your Supabase SQL editor
+   -- File: sql/11_ai_upgrade.sql
+   ```
+
+4. **Install dependencies** :
+   ```bash
+   cd server && npm install
+   ```
+
+5. **Restart the server** — you'll see:
+   ```
+   🤖 AI Features: ENABLED (Gemini Vision Active)
+   ```
+
+### ❌ How to Remove AI (Slim Codebase)
+
+If you want a minimal codebase without any AI dependencies:
+
+1. **Delete the AI feature folder:**
+   ```bash
+   rm -rf server/features/ai/
+   ```
+
+2. **Remove the dependency** from `server/package.json`:
+   ```diff
+   -  "@google/generative-ai": "^0.21.0"
+   ```
+
+3. **Revert route imports** in `server/routes/reports.js` and `server/routes/admin.js`:
+   ```diff
+   - const { AI_ENABLED, analyzeCivicIssue, validateDescriptionMatch } = require("../features/ai");
+   ```
+   Remove the AI endpoint blocks at the bottom of `reports.js` (marked with `🤖 AI ENDPOINTS`).
+
+4. **Run `npm install`** to clean up `node_modules`.
+
+> **Note:** The base CityPulse project works perfectly without AI. All AI features are guarded behind `AI_ENABLED` checks — if `GEMINI_API_KEY` is not set, AI endpoints return `503` and the UI automatically falls back to manual mode.
+
+### 📁 AI Architecture
+
+```
+server/
+├── features/
+│   └── ai/
+│       ├── index.js       ← Feature gate (exports AI_ENABLED flag)
+│       └── ai-vision.js   ← Gemini Vision (3 phases)
+├── routes/
+│   ├── reports.js         ← AI endpoints wrapped in AI_ENABLED guard
+│   └── admin.js           ← AI resolve audit (conditional)
+sql/
+└── 11_ai_upgrade.sql      ← AI-specific DB columns & tables
+```
+
+---
+
 ## 📜 License
 This project is licensed under the MIT License
 

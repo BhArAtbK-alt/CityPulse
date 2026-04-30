@@ -22,11 +22,14 @@ export const reportsApi = {
   create:         fd => api.post("/reports", fd, { headers: { "Content-Type": "multipart/form-data" } }),
   vote:      (id, type) => api.post(`/reports/${id}/vote`, { type }),
   comment:   (id, content) => api.post(`/reports/${id}/comments`, { content }),
-
   getLeaderboard: () => api.get("/reports/leaderboard"),
   getUserReports: uid => api.get(`/reports/user/${uid}`),
   getSettings:    () => api.get("/reports/settings"),
   delete:         id => api.delete(`/reports/${id}`),
+  // AI-Exclusive (returns 503 if GEMINI_API_KEY not set)
+  analyzeAI:      fd => api.post("/reports/analyze-ai", fd, { headers: { "Content-Type": "multipart/form-data" } }),
+  validateMatch:  d  => api.post("/reports/validate-match", d),
+  deleteTemp:     p  => api.delete(`/reports/temp/${p}`),
 };
 export const adminApi = {
   getSettings:        () => api.get("/admin/settings"),

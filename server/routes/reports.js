@@ -9,6 +9,7 @@ const { authMiddleware, optionalAuth } = require("../middleware/auth");
 const { recalculateRankings } = require("../utils/rankings");
 const { getWardFromCoords } = require("../utils/wards-logic");
 const { isPointInPolygon } = require("../utils/geo");
+const { AI_ENABLED, analyzeCivicIssue, validateDescriptionMatch } = require("../features/ai");
 const fs = require("fs").promises;
 const path = require("path");
 const sharp = require("sharp");
@@ -83,25 +84,22 @@ router.get("/", optionalAuth, async (req, res) => {
 
     let reports = rows.map(enrichReport);
     
-    // Attach userVote and hasMeToo if logged in
+    // Attach userVote if logged in
     if (req.user && reports.length > 0) {
       const ids = reports.map(r => r.id);
       const placeholders = ids.map(() => "?").join(",");
       
-      const [votesRes, meTooRes] = await Promise.all([
-        db.query(`SELECT report_id, vote_type FROM votes WHERE user_id = ? AND report_id IN (${placeholders})`, [req.user.id, ...ids]),
-        db.query(`SELECT report_id FROM report_me_toos WHERE user_id = ? AND report_id IN (${placeholders})`, [req.user.id, ...ids])
-      ]);
+      const { rows: votesRows } = await db.query(
+        `SELECT report_id, vote_type FROM votes WHERE user_id = ? AND report_id IN (${placeholders})`,
+        [req.user.id, ...ids]
+      );
 
       const voteMap = {};
-      votesRes.rows.forEach(v => { voteMap[v.report_id] = v.vote_type; });
-      
-      const meTooSet = new Set(meTooRes.rows.map(m => m.report_id));
+      votesRows.forEach(v => { voteMap[v.report_id] = v.vote_type; });
 
       reports = reports.map(r => ({ 
         ...r, 
-        userVote: voteMap[r.id] || null,
-        hasMeToo: meTooSet.has(r.id)
+        userVote: voteMap[r.id] || null
       }));
     }
 
@@ -201,17 +199,15 @@ router.get("/:id", optionalAuth, async (req, res) => {
     `, [req.params.id]);
 
     let userVote = null;
-    let hasMeToo = false;
     if (req.user) {
-      const [v, m] = await Promise.all([
-        db.query("SELECT vote_type FROM votes WHERE report_id = ? AND user_id = ?", [req.params.id, req.user.id]),
-        db.query("SELECT id FROM report_me_toos WHERE report_id = ? AND user_id = ?", [req.params.id, req.user.id])
-      ]);
-      userVote = v.rows[0]?.vote_type || null;
-      hasMeToo = m.rows.length > 0;
+      const { rows: voteRows } = await db.query(
+        "SELECT vote_type FROM votes WHERE report_id = ? AND user_id = ?",
+        [req.params.id, req.user.id]
+      );
+      userVote = voteRows[0]?.vote_type || null;
     }
 
-    res.json({ success: true, data: { ...enrichReport(report), comments, history, userVote, hasMeToo } });
+    res.json({ success: true, data: { ...enrichReport(report), comments, history, userVote } });
   } catch (e) { res.status(500).json({ success: false, error: "Failed" }); }
 });
 
@@ -250,7 +246,7 @@ router.post("/", authMiddleware, upload.single("image"), async (req, res) => {
         if (req.file) await fs.unlink(req.file.path).catch(() => {});
 
         const existingId = nearby[0].id;
-        // Add to me_too_users (Optional: user's upvote signal)
+        // Auto-upvote the existing report on behalf of the duplicate submitter
         try {
           await db.query(`
             INSERT INTO votes (id, report_id, user_id, vote_type) 
@@ -261,7 +257,7 @@ router.post("/", authMiddleware, upload.single("image"), async (req, res) => {
             UPDATE reports SET upvote_count = upvote_count + 1, net_votes = net_votes + 1 WHERE id = ?
           `, [existingId]);
         } catch (err) {
-          // User already voted/me-too-ed this
+          // User already voted on this report
         }
 
         const { rows: updated } = await db.query("SELECT * FROM reports WHERE id = ?", [existingId]);
@@ -538,22 +534,57 @@ router.delete("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/reports/:id/me-too
-router.post("/:id/me-too", authMiddleware, async (req, res) => {
-  try {
-    const { rows: existing } = await db.query(
-      "SELECT id FROM report_me_toos WHERE report_id = ? AND user_id = ?",
-      [req.params.id, req.user.id]
-    );
 
-    if (existing.length > 0) {
-      await db.query("DELETE FROM report_me_toos WHERE report_id = ? AND user_id = ?", [req.params.id, req.user.id]);
-      res.json({ success: true, active: false });
-    } else {
-      await db.query("INSERT INTO report_me_toos (id, report_id, user_id) VALUES (?, ?, ?)", [uuidv4(), req.params.id, req.user.id]);
-      res.json({ success: true, active: true });
-    }
-  } catch (e) { res.status(500).json({ success: false, error: "Action failed" }); }
+
+// ══════════════════════════════════════════════════════════════
+// 🤖 AI ENDPOINTS (Optional — require GEMINI_API_KEY in .env)
+// ══════════════════════════════════════════════════════════════
+
+// POST /api/reports/analyze-ai — Phase 1: Image Classification
+router.post("/analyze-ai", authMiddleware, upload.single("image"), async (req, res) => {
+  if (!AI_ENABLED) {
+    if (req.file) await fs.unlink(req.file.path).catch(() => {});
+    return res.status(503).json({ error: "AI features are not configured. Add GEMINI_API_KEY to your .env to enable." });
+  }
+  try {
+    if (!req.file) return res.status(400).json({ error: "No image provided" });
+
+    const compressedBuffer = await sharp(req.file.path)
+      .resize(1024, 1024, { fit: "inside", withoutEnlargement: true, kernel: sharp.kernel.lanczos3 })
+      .jpeg({ quality: 80, chromaSubsampling: '4:4:4', mozjpeg: true })
+      .toBuffer();
+
+    const analysis = await analyzeCivicIssue(compressedBuffer, "image/jpeg");
+    if (!analysis.is_valid) await fs.unlink(req.file.path).catch(() => {});
+    res.json({ ...analysis, temp_path: req.file.filename });
+  } catch (error) {
+    console.error("AI Analysis Error:", error);
+    if (req.file) await fs.unlink(req.file.path).catch(() => {});
+    res.status(500).json({ error: "AI analysis failed" });
+  }
+});
+
+// POST /api/reports/validate-match — Phase 2: Description Verification
+router.post("/validate-match", authMiddleware, async (req, res) => {
+  if (!AI_ENABLED) {
+    return res.status(503).json({ error: "AI features are not configured. Add GEMINI_API_KEY to your .env to enable." });
+  }
+  try {
+    const { temp_path, description } = req.body;
+    if (!temp_path || !description) return res.status(400).json({ error: "Image and description required" });
+    const fullPath = path.join(__dirname, "../uploads", temp_path);
+    const imageBuffer = await fs.readFile(fullPath);
+    const review = await validateDescriptionMatch(imageBuffer, "image/jpeg", description);
+    res.json(review);
+  } catch (error) { res.status(500).json({ error: "Review failed" }); }
+});
+
+// DELETE /api/reports/temp/:filename — Cleanup AI temp files
+router.delete("/temp/:filename", authMiddleware, async (req, res) => {
+  try {
+    await fs.unlink(path.join(__dirname, "../uploads", req.params.filename)).catch(() => {});
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ success: false }); }
 });
 
 module.exports = router;

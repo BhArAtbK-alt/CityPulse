@@ -6,8 +6,10 @@ const db       = require("../utils/db");
 const supabase = require("../utils/supabase");
 const { authMiddleware, adminOnly, logActivity, logAudit } = require("../middleware/auth");
 const upload = require("../middleware/upload");
+const { AI_ENABLED, verifyResolution } = require("../features/ai");
 const fs = require("fs").promises;
 const path = require("path");
+const axios = require("axios");
 
 router.use(authMiddleware, adminOnly);
 
@@ -270,6 +272,35 @@ router.patch("/reports/:id/resolve", upload.single("after_image"), async (req, r
       }
     }
 
+    // AI AUDIT: If AI is enabled and original image exists, verify resolution
+    let aiAuditNote = "Manually Resolved (Distance Verified)";
+    if (AI_ENABLED && report.image_url) {
+      try {
+        let beforeBuffer;
+        const { rows: fullReport } = await db.query("SELECT image_url FROM reports WHERE id = $1", [req.params.id]);
+        const imgUrl = fullReport[0]?.image_url;
+        if (imgUrl) {
+          if (imgUrl.startsWith("http")) {
+            const response = await axios.get(imgUrl, { responseType: 'arraybuffer' });
+            beforeBuffer = Buffer.from(response.data);
+          } else {
+            const beforeAbs = path.join(__dirname, "..", imgUrl.replace("/uploads/", "uploads/"));
+            beforeBuffer = await require("fs").readFileSync(beforeAbs);
+          }
+          const afterBuffer = await require("fs").readFileSync(req.file.path);
+          const audit = await verifyResolution(beforeBuffer, "image/jpeg", afterBuffer, req.file.mimetype);
+          if (!audit.is_resolved) {
+            await fs.unlink(req.file.path).catch(() => {});
+            return res.status(400).json({ success: false, error: "AI Audit failed: Issue not resolved.", details: audit.comment });
+          }
+          aiAuditNote = `AI-Verified Resolve: ${audit.comment}`;
+        }
+      } catch (aiErr) {
+        console.warn("[AI Resolve Audit] Skipped:", aiErr.message);
+        // AI failure is non-blocking — proceed with manual resolve
+      }
+    }
+
     // Upload after-image to Supabase Storage (same as citizen report uploads)
     let afterUrl = `/uploads/${req.file.filename}`;
     try {
@@ -290,7 +321,6 @@ router.patch("/reports/:id/resolve", upload.single("after_image"), async (req, r
       }
     } catch (uploadErr) {
       console.error("[resolve upload error]", uploadErr.message);
-      // fallback to local path already set above
     } finally {
       await fs.unlink(req.file.path).catch(() => {});
     }
@@ -302,12 +332,12 @@ router.patch("/reports/:id/resolve", upload.single("after_image"), async (req, r
       SET changed_by = $1, note = $2 
       WHERE report_id = $3 AND new_status = 'resolved' 
       AND created_at >= NOW() - INTERVAL '5 seconds'
-    `, [req.user.id, note || "Manually Resolved (Distance Verified)", req.params.id]);
+    `, [req.user.id, aiAuditNote, req.params.id]);
 
     await db.query(`
       INSERT INTO admin_notes (id, report_id, admin_id, note, status_to)
       VALUES ($1, $2, $3, $4, 'resolved')
-    `, [uuidv4(), req.params.id, req.user.id, "Manually Resolved (Distance Verified)"]);
+    `, [uuidv4(), req.params.id, req.user.id, aiAuditNote]);
 
     // Emit status_update so citizen gets notified
     if (req.app.locals.io) {

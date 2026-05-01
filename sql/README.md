@@ -14,7 +14,7 @@ Run files in this order in **Supabase SQL Editor**:
 | `03_indexes.sql` | Spatial (GIST) + B-tree performance indexes |
 | `04_functions.sql` | Core functions: exec_sql, check_area_overlap, SLA calc |
 | `05_triggers.sql` | All 6 automated triggers |
-| `06_rls_policies.sql` | Row Level Security — service role full access |
+| `06_rls_policies.sql` | Row Level Security —:service role full access |
 | `07_data_sync.sql` | ⚠️ One-time data integrity sync (existing DBs only) |
 | `08_migrations.sql` | Safe ALTER TABLE migrations (existing DBs only) |
 | `09_storage.sql` | Supabase Storage bucket for images |
@@ -28,7 +28,7 @@ Run files in this order in **Supabase SQL Editor**:
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Citizens, admins, super_admin — role-based |
+| `users` | Citizens, admins, super_admin —:role-based |
 | `municipal_areas` | PostGIS MultiPolygon jurisdictions |
 | `boundary_proposals` | Admin → SA geofence change requests |
 | `reports` | Civic issue reports with spatial geom + SLA |
@@ -70,7 +70,3 @@ Run files in this order in **Supabase SQL Editor**:
 | `citizen_score(verified, upvotes, reports)` | Leaderboard score formula |
 
 ---
-
-## Removed Features
-
-- **`report_me_toos` table** — The "Me Too" button was removed in favor of the existing upvote system. The `me_too_count` column and associated trigger from earlier iterations are not included. The `unique_upvoters` count via upvotes already serves the community impact purpose.

@@ -63,7 +63,7 @@ Run files in this order in **Supabase SQL Editor**:
 
 | Function | Purpose |
 |----------|---------|
-| `exec_sql(text)` | HTTP bridge — runs arbitrary SQL from Node.js via RPC |
+| `exec_sql(text)` | HTTP bridge —: runs arbitrary SQL from Node.js via RPC |
 | `check_area_overlap(geom, exclude_id)` | Returns conflicting active zones |
 | `get_area_for_point(lat, lng)` | Ward detection from coordinates |
 | `calculate_sla_due(severity, is_night)` | Returns SLA deadline TIMESTAMPTZ |
@@ -73,4 +73,4 @@ Run files in this order in **Supabase SQL Editor**:
 
 ## Removed Features
 
-- **`report_me_toos` table** — The "Me Too" button was removed in favor of the existing upvote system. The `me_too_count` column and associated trigger from earlier iterations are not included. The `unique_upvoters` count via upvotes already serves the community-impact purpose.
+- **`report_me_toos` table** — The "Me Too" button was removed in favor of the existing upvote system. The `me_too_count` column and associated trigger from earlier iterations are not included. The `unique_upvoters` count via upvotes already serves the community impact purpose.
